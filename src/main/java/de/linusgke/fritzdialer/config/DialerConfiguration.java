@@ -5,6 +5,18 @@ import lombok.Data;
 @Data
 public class DialerConfiguration {
 
+    public static DialerConfiguration DEFAULT_CONFIGURATION;
+
+    static {
+        DEFAULT_CONFIGURATION = new DialerConfiguration();
+        final FritzBoxConfiguration fritzBoxConfiguration = new FritzBoxConfiguration();
+        fritzBoxConfiguration.setAddress("fritz.box");
+        fritzBoxConfiguration.setPort(80);
+        fritzBoxConfiguration.setUsername("");
+        fritzBoxConfiguration.setPassword("");
+        DEFAULT_CONFIGURATION.setFritzBox(fritzBoxConfiguration);
+    }
+
     private FritzBoxConfiguration fritzBox;
 
     @Data

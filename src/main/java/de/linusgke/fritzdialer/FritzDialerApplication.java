@@ -75,7 +75,8 @@ public class FritzDialerApplication {
 
     private DialerConfiguration readConfiguration() throws IOException {
         if (!Files.exists(CONFIGURATION_PATH)) {
-            return null;
+            log.warn("Using default configuration since configuration file does not exist");
+            return DialerConfiguration.DEFAULT_CONFIGURATION;
         }
 
         final DialerConfiguration config;
@@ -87,14 +88,14 @@ public class FritzDialerApplication {
 
     public void saveConfiguration() throws IOException {
         if (!Files.exists(CONFIGURATION_PATH)) {
-            Files.createDirectories(CONFIGURATION_PATH);
+            Files.createDirectories(CONFIGURATION_PATH.getParent());
             Files.createFile(CONFIGURATION_PATH);
         }
 
         try (final FileWriter writer = new FileWriter(CONFIGURATION_PATH.toFile(), StandardCharsets.UTF_8)) {
             gson.toJson(configuration, DialerConfiguration.class, writer);
         } catch (final IOException e) {
-            log.error("Error while saving configuration");
+            log.error("Error while saving configuration", e);
         }
     }
 }

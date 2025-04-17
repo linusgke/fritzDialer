@@ -6,10 +6,13 @@ import lombok.ToString;
 
 @AllArgsConstructor
 @Getter
-@ToString
 public class Phone {
 
     private int dialPort;
     private String name;
 
+    @Override
+    public String toString() {
+        return name;
+    }
 }

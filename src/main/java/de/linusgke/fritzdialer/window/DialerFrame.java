@@ -9,6 +9,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 public class DialerFrame extends JFrame {
@@ -54,9 +55,11 @@ public class DialerFrame extends JFrame {
     }
 
     public void updateStatus(final String status) {
-        SwingUtilities.invokeLater(() -> {
-            statusLabel.setText(status);
-        });
+        SwingUtilities.invokeLater(() -> statusLabel.setText(status));
+    }
+
+    public void updatePhones(final List<Phone> phones) {
+        SwingUtilities.invokeLater(() -> phones.forEach(phone -> phoneInput.addItem(phone)));
     }
 
     private void loadFromConfiguration() {
@@ -77,7 +80,7 @@ public class DialerFrame extends JFrame {
 
     private void saveToConfiguration() {
         final DialerConfiguration configuration = application.getConfiguration();
-        configuration.setPhone((String) phoneInput.getSelectedItem());
+        configuration.setPhone(phoneInput.getSelectedItem().toString());
         configuration.setDialClipboardHotkey(callClipboardHotkeyInput.getText());
         configuration.setDialSelectionHotkey(callSelectionHotkeyInput.getText());
         configuration.setAutostart(autostartCheckBox.isSelected());
@@ -95,6 +98,7 @@ public class DialerFrame extends JFrame {
             JOptionPane.showMessageDialog(application.getFrame(), "Fehler beim Speichern der Konfiguration: " + ex, "Konfiguration speichern", JOptionPane.ERROR_MESSAGE);
         }
 
+        // TODO check if credentials have changed
         application.getFritzBox().connect();
     }
 

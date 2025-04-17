@@ -1,9 +1,10 @@
 package de.linusgke.fritzdialer.fritz;
 
 import de.linusgke.fritzdialer.FritzDialerApplication;
-import de.linusgke.fritzdialer.fritz.tr064.TR064Connection;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.jfritz.fboxlib.exceptions.*;
 import org.jfritz.fboxlib.fritzbox.FirmwareVersion;
 import org.jfritz.fboxlib.fritzbox.FritzBoxCommunication;
@@ -20,7 +21,6 @@ public class FritzBox {
     private final FritzDialerApplication application;
     private final List<Phone> phones = new ArrayList<>();
 
-    private TR064Connection connection;
     private FritzBoxCommunication communication;
     private Thread communicationThread;
     private boolean connected;
@@ -34,6 +34,25 @@ public class FritzBox {
         communicationThread.start();
     }
 
+    public void call(final String phoneNumber) {
+        try {
+            final List<NameValuePair> postData = new ArrayList<>();
+            postData.add(new BasicNameValuePair("clicktodial", "on"));
+            postData.add(new BasicNameValuePair("port", "51")); // port.getDialPort()
+            postData.add(new BasicNameValuePair("btn_apply", ""));
+            postData.add(new BasicNameValuePair("sid", communication.getSid()));
+            postData.add(new BasicNameValuePair("page", "telDial"));
+            communication.postToPageAndGetAsString("/data.lua", postData);
+
+            String dial_query = "useajax=1&xhr=1&dial=" + phoneNumber;
+            dial_query = dial_query.replace("#", "%23"); // # %23
+            dial_query = dial_query.replace("*", "%2A"); // * %2A
+            communication.getPageAsString("/fon_num/foncalls_list.lua?" + dial_query);
+        } catch (Exception e) {
+            log.error("Error while connecting to FRITZ!Box", e);
+        }
+    }
+
     private void initialize() {
         final String address = application.getConfiguration().getFritzBox().getAddress();
         final String username = application.getConfiguration().getFritzBox().getUsername();
@@ -45,15 +64,6 @@ public class FritzBox {
         if (address.isEmpty() || username.isEmpty() || password.isEmpty()) {
             log.warn("Credentials incomplete. Skipping login");
             application.getFrame().updateStatus("Anmeldung fehlgeschlagen: Ungültige Zugangsdaten");
-            return;
-        }
-
-        try {
-            connection = new TR064Connection(address, username, password);
-            connection.init(null);
-        } catch (Exception e) {
-            log.error("Error establishing TR064 connection with FRITZ!Box", e);
-            application.getFrame().updateStatus("Anmeldung fehlgeschlagen: TR064 Fehler");
             return;
         }
 
@@ -96,6 +106,9 @@ public class FritzBox {
     }
 
     private void requestPhones() {
+        // Remove all existing phones
+        phones.clear();
+
         for (final PhoneType type : PhoneType.values()) {
             final Vector<String> countResponse = query(type.getCountQuery());
             if (countResponse == null || countResponse.size() != 1) {
@@ -120,5 +133,8 @@ public class FritzBox {
                 phones.add(new Phone(firstDialPort + i, name));
             }
         }
+
+        log.info("Found {} phones", phones.size());
+        application.getFrame().updatePhones(phones);
     }
 }

@@ -120,10 +120,5 @@ public class FritzBox {
                 phones.add(new Phone(firstDialPort + i, name));
             }
         }
-
-        for (final Phone phone : phones) {
-            System.out.println(phone);
-        }
-
     }
 }

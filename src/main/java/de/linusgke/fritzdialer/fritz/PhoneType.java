@@ -15,4 +15,5 @@ public enum PhoneType {
     private final String countQuery;
     private final String nameQuery;
     private final int firstDialPort;
+
 }

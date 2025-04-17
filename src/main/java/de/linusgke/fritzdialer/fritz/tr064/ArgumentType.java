@@ -21,13 +21,9 @@ import lombok.ToString;
 @Setter
 @Getter
 @ToString
-@XmlRootElement (name="argument")
+@XmlRootElement(name = "argument")
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "argumentType", propOrder = {
-    "name",
-    "direction",
-    "relatedStateVariable"
-})
+@XmlType(name = "argumentType", propOrder = {"name", "direction", "relatedStateVariable"})
 public class ArgumentType {
 
     @XmlElement(required = true)

@@ -9,7 +9,7 @@
 package de.linusgke.fritzdialer.fritz.tr064;
 
 public class UnauthorizedException extends Exception {
-	public UnauthorizedException(Exception cause) {
-		super (cause);
-	}
+    public UnauthorizedException(Exception cause) {
+        super(cause);
+    }
 }

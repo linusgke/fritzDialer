@@ -21,18 +21,15 @@ import javax.xml.bind.annotation.XmlType;
 @Setter
 @Getter
 @ToString
-@XmlRootElement ( name="root")
+@XmlRootElement(name = "root")
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "rootType", propOrder = {
-"specVersion",
-"device"
-})
+@XmlType(name = "rootType", propOrder = {"specVersion", "device"})
 public class RootType {
 
-    @XmlElement(name="specVersion", required = true)
+    @XmlElement(name = "specVersion", required = true)
     private SpecVersionType specVersion;
 
-    @XmlElement(name="device", required = true)
+    @XmlElement(name = "device", required = true)
     private DeviceDesc device;
 
 }

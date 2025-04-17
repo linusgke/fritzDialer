@@ -9,6 +9,12 @@ public class DialerConfiguration {
 
     static {
         DEFAULT_CONFIGURATION = new DialerConfiguration();
+        DEFAULT_CONFIGURATION.setPhone("");
+        DEFAULT_CONFIGURATION.setDialClipboardHotkey("Strg+B");
+        DEFAULT_CONFIGURATION.setDialSelectionHotkey("Strg+Y");
+        DEFAULT_CONFIGURATION.setAutostart(false);
+        DEFAULT_CONFIGURATION.setStartMinimized(false);
+
         final FritzBoxConfiguration fritzBoxConfiguration = new FritzBoxConfiguration();
         fritzBoxConfiguration.setAddress("fritz.box");
         fritzBoxConfiguration.setPort(80);
@@ -18,6 +24,11 @@ public class DialerConfiguration {
     }
 
     private FritzBoxConfiguration fritzBox;
+    private String phone;
+    private String dialClipboardHotkey;
+    private String dialSelectionHotkey;
+    private boolean autostart;
+    private boolean startMinimized;
 
     @Data
     public static class FritzBoxConfiguration {

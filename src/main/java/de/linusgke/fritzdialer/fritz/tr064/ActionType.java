@@ -25,18 +25,14 @@ import lombok.ToString;
 @Getter
 @ToString
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "actionType", propOrder = {
-    "name",
-    "argumentList"
-})
+@XmlType(name = "actionType", propOrder = {"name", "argumentList"})
 public class ActionType {
-
 
     @XmlElement(required = true)
     protected String name;
 
-    @XmlElementWrapper(name="argumentList")
-    @XmlAnyElement (lax = true)
+    @XmlElementWrapper(name = "argumentList")
+    @XmlAnyElement(lax = true)
     protected List<ArgumentType> argumentList;
 
 }

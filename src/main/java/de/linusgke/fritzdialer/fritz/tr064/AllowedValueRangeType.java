@@ -21,21 +21,16 @@ import javax.xml.bind.annotation.XmlType;
 @Getter
 @ToString
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "allowedValueRange", propOrder = {
-    "minimum",
-    "maximum",
-    "step",
-})
-public class AllowedValueRangeType
-{
+@XmlType(name = "allowedValueRange", propOrder = {"minimum", "maximum", "step",})
+public class AllowedValueRangeType {
 
     @XmlElement(required = true)
-	private String minimum;
+    private String minimum;
 
     @XmlElement(required = true)
-	private String maximum;
+    private String maximum;
 
     @XmlElement(required = true)
-	private String step;
+    private String step;
 
 }

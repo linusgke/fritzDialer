@@ -33,6 +33,15 @@ public class FritzDialerApplication {
     private DialerTrayIcon trayIcon;
 
     public void startup(final String[] args) {
+        // Register native hotkey hook
+        try {
+            //GlobalScreen.registerNativeHook();
+            //GlobalScreen.addNativeKeyListener(new HotkeyListener());
+        } catch (final Exception e) {
+            log.error("Error while registering native hook", e);
+            System.exit(1);
+        }
+
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (final Exception e) {
@@ -55,14 +64,8 @@ public class FritzDialerApplication {
         // Create tray icon
         trayIcon = new DialerTrayIcon(this);
 
-        // Register native hotkey hook
-        try {
-            GlobalScreen.registerNativeHook();
-            GlobalScreen.addNativeKeyListener(new HotkeyListener());
-        } catch (final NativeHookException e) {
-            log.error("Error while registering native hook", e);
-            System.exit(1);
-        }
+        // Connect to FRITZ!Box
+        fritzBox.connect();
     }
 
     public void shutdown() {

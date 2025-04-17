@@ -22,10 +22,8 @@ public class NamespaceFilter extends XMLFilterImpl {
     public NamespaceFilter(String namespaceUri, boolean addNamespace) {
         super();
 
-        if (addNamespace)
-            this.usedNamespaceUri = namespaceUri;
-        else 
-            this.usedNamespaceUri = "";
+        if (addNamespace) this.usedNamespaceUri = namespaceUri;
+        else this.usedNamespaceUri = "";
         this.addNamespace = addNamespace;
     }
 

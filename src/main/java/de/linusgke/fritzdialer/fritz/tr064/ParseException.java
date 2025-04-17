@@ -9,7 +9,7 @@
 package de.linusgke.fritzdialer.fritz.tr064;
 
 public class ParseException extends Exception {
-	public ParseException (Exception cause) {
-		super (cause);
-	}
+    public ParseException(Exception cause) {
+        super(cause);
+    }
 }

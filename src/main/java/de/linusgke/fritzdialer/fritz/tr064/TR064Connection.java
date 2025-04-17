@@ -50,7 +50,7 @@ import java.util.Map;
 import java.util.Random;
 
 @Slf4j
-public class FritzConnection {
+public class TR064Connection {
 
     private static final int DEFAULT_HTTPS_PORT = 49443;
     private static final String SCHEME_HTTPS = "https";
@@ -67,44 +67,34 @@ public class FritzConnection {
 
     private String name;
 
-    public FritzConnection(String scheme, String address, int port) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public TR064Connection(String scheme, String address, int port) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         targetHost = new HttpHost(address, port, scheme);
         httpClient = newClient();
         context = HttpClientContext.create();
         services = new HashMap<>();
     }
 
-    public FritzConnection(String address) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public TR064Connection(String address) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         this(SCHEME_HTTPS, address, DEFAULT_HTTPS_PORT);
     }
 
-    public FritzConnection(String scheme, String address, int port, String user, String pwd) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public TR064Connection(String scheme, String address, int port, String user, String pwd) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         this(scheme, address, port);
         this.user = user;
         this.pwd = pwd;
     }
 
-    public FritzConnection(String address, String user, String pwd) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public TR064Connection(String address, String user, String pwd) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         this(address);
         this.user = user;
         this.pwd = pwd;
     }
 
     private CloseableHttpClient newClient() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
-        SSLContext context = SSLContexts.custom()
-                .loadTrustMaterial(TrustSelfSignedStrategy.INSTANCE)
-                .build();
-
-        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("http", PlainConnectionSocketFactory.INSTANCE)
-                .register("https", new SSLConnectionSocketFactory(context, NoopHostnameVerifier.INSTANCE))
-                .build();
-
+        SSLContext context = SSLContexts.custom().loadTrustMaterial(TrustSelfSignedStrategy.INSTANCE).build();
+        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.INSTANCE).register("https", new SSLConnectionSocketFactory(context, NoopHostnameVerifier.INSTANCE)).build();
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(registry);
-
-        return HttpClients.custom()
-                .setConnectionManager(connectionManager)
-                .build();
+        return HttpClients.custom().setConnectionManager(connectionManager).build();
     }
 
     public void init(String scpdUrl) throws IOException, ParseException, UnauthorizedException {
@@ -155,7 +145,6 @@ public class FritzConnection {
     }
 
     private void getServicesFromDevice(DeviceDesc device) throws IOException, ParseException, UnauthorizedException {
-
         for (Object sT : device.getServiceList()) {
             log.debug("Service {} {}", sT, sT.getClass().getName());
         }
@@ -208,7 +197,6 @@ public class FritzConnection {
     public InputStream getXMLIS(String fileName) throws IOException, UnauthorizedException {
         HttpGet httpget = new HttpGet(fileName);
         return httpRequest(targetHost, httpget, context);
-
     }
 
     protected InputStream getSOAPXMLIS(String fileName, String urn, HttpEntity entity) throws IOException, UnauthorizedException {

@@ -54,7 +54,7 @@ public class DialerTrayIcon {
         try {
             tray.add(trayIcon);
         } catch (final AWTException e) {
-            log.error("Error while adding tray icon", e);
+            log.error("Error adding tray icon", e);
         }
     }
 }

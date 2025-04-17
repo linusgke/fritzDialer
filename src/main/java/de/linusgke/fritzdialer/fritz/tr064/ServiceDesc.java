@@ -19,30 +19,24 @@ import lombok.ToString;
 
 @Getter
 @ToString
-@XmlRootElement (name="service")
+@XmlRootElement(name = "service")
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(propOrder = {
-		"serviceType",
-		"serviceId",
-		"controlURL",
-		"eventSubURL",
-		"scpdurl"
-})
-public class ServiceDesc
-{
+@XmlType(propOrder = {"serviceType", "serviceId", "controlURL", "eventSubURL", "scpdurl"})
+public class ServiceDesc {
 
     @XmlElement(name = "serviceType", required = true)
-	protected String serviceType;
+    protected String serviceType;
 
     @XmlElement(required = true)
-	protected String serviceId;
+    protected String serviceId;
 
     @XmlElement(required = true)
-	protected String controlURL;
+    protected String controlURL;
 
     @XmlElement(required = true)
-	protected String eventSubURL;
+    protected String eventSubURL;
 
     @XmlElement(name = "SCPDURL", required = true)
-	protected String scpdurl;
+    protected String scpdurl;
+
 }

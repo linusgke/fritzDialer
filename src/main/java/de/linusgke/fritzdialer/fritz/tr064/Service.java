@@ -18,43 +18,42 @@ import java.util.Map;
 @Slf4j
 public class Service {
 
-	private final ServiceDesc serviceXML;
-	private final Map<String, Action> actions;
+    private final ServiceDesc serviceXML;
+    private final Map<String, Action> actions;
 
-	public Service(ServiceDesc serviceXML, FritzConnection connection) throws IOException, ParseException, UnauthorizedException {
-		this.serviceXML = serviceXML;
-		actions = new HashMap<>();
+    public Service(ServiceDesc serviceXML, TR064Connection connection) throws IOException, ParseException, UnauthorizedException {
+        this.serviceXML = serviceXML;
+        actions = new HashMap<>();
 
-		try (InputStream is = connection.getXMLIS(serviceXML.getScpdurl())) {
+        try (InputStream is = connection.getXMLIS(serviceXML.getScpdurl())) {
+            ScpdType scpd = (ScpdType) JAXBUtilities.unmarshalInput(is);
+            log.debug(scpd.toString());
+            for (ActionType a : scpd.getActionList()) {
+                actions.put(a.getName(), new Action(a, scpd.getServiceStateTable(), connection, this.serviceXML));
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            InputStream is = connection.getXMLIS(serviceXML.getScpdurl());
+            ScpdType scpd = (ScpdType) JAXBUtilities.unmarshalInput(is);
+            log.debug("scpd {}", scpd.toString());
+            for (ActionType a : scpd.getActionList()) {
+                actions.put(a.getName(), new Action(a, scpd.getServiceStateTable(), connection, this.serviceXML));
+            }
+        }
 
-			ScpdType scpd = (ScpdType) JAXBUtilities.unmarshalInput(is);
+    }
 
-			log.debug(scpd.toString());
-			for (ActionType a : scpd.getActionList()) {
-				actions.put(a.getName(), new Action(a, scpd.getServiceStateTable(), connection, this.serviceXML));
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			InputStream is = connection.getXMLIS(serviceXML.getScpdurl());
-			ScpdType scpd = (ScpdType) JAXBUtilities.unmarshalInput(is);
+    public Map<String, Action> getActions() {
+        return actions;
+    }
 
-			log.debug("scpd {}", scpd.toString());
-			for (ActionType a : scpd.getActionList()) {
-				actions.put(a.getName(), new Action(a, scpd.getServiceStateTable(), connection, this.serviceXML));
-			}
-		}
+    public Action getAction(String name) {
+        return getActions().get(name);
+    }
 
-	}
+    @Override
+    public String toString() {
+        return serviceXML.getServiceType();
+    }
 
-	public Map<String, Action> getActions() {
-		return actions;
-	}
-
-	public Action getAction(String name) {
-		return getActions().get(name);
-	}
-	@Override
-	public String toString(){
-		return serviceXML.getServiceType();
-	}
 }

@@ -20,13 +20,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Setter
 @Getter
 @ToString
-@XmlRootElement (name="specVersion")
+@XmlRootElement(name = "specVersion")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class SpecVersionType {
 
-    @XmlElement(name="major")
+    @XmlElement(name = "major")
     private int major;
 
-    @XmlElement(name="minor")
+    @XmlElement(name = "minor")
     private int minor;
+
 }

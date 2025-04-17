@@ -26,25 +26,9 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@XmlRootElement (name="device")
+@XmlRootElement(name = "device")
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name="device", 
-	propOrder = {
-    "deviceType",
-    "friendlyName",
-    "manufacturer",
-    "manufacturerURL",
-    "modelDescription",
-    "modelName",
-    "modelNumber",
-    "modelURL",
-    "udn",
-    "upc",
-    "iconList",
-    "serviceList",
-    "deviceList",
-    "presentationURL"
-})
+@XmlType(name = "device", propOrder = {"deviceType", "friendlyName", "manufacturer", "manufacturerURL", "modelDescription", "modelName", "modelNumber", "modelURL", "udn", "upc", "iconList", "serviceList", "deviceList", "presentationURL"})
 public class DeviceDesc {
 
     @XmlElement(required = true)
@@ -84,4 +68,5 @@ public class DeviceDesc {
 
     @XmlSchemaType(name = "anyURI")
     private String presentationURL;
+
 }

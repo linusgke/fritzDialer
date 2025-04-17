@@ -21,13 +21,7 @@ import javax.xml.bind.annotation.XmlType;
 @Getter
 @ToString
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "iconType", propOrder = {
-    "mimetype",
-    "width",
-    "height",
-    "depth",
-    "url"
-})
+@XmlType(name = "iconType", propOrder = {"mimetype", "width", "height", "depth", "url"})
 public class IconType {
 
     @XmlElement(required = true)

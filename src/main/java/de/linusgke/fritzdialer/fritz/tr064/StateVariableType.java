@@ -27,29 +27,22 @@ import lombok.ToString;
 @Setter
 @Getter
 @ToString
-@XmlRootElement (name = "stateVariable")
+@XmlRootElement(name = "stateVariable")
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "stateVariableType", propOrder = {
-    "name",
-    "dataType",
-    "allowedValueList",
-    "allowedValueRange",
-    "defaultValue"
-})
+@XmlType(name = "stateVariableType", propOrder = {"name", "dataType", "allowedValueList", "allowedValueRange", "defaultValue"})
 public class StateVariableType {
-
 
     @XmlAttribute(name = "sendEvents")
     protected String sendEvents;
 
-    @XmlElement(name="name", required = true)
+    @XmlElement(name = "name", required = true)
     protected String name;
 
     @XmlElement(required = true)
     protected String dataType;
 
-    @XmlElementWrapper(name="allowedValueList")
-    @XmlAnyElement (lax = true)
+    @XmlElementWrapper(name = "allowedValueList")
+    @XmlAnyElement(lax = true)
     private List<String> allowedValueList;
 
     private AllowedValueRangeType allowedValueRange;
@@ -57,13 +50,13 @@ public class StateVariableType {
     private String defaultValue;
 
     /**
-	 * @return the allowedValueList
-	 */
-	public List<String> getAllowedValueList()
-	{
-		if( this.allowedValueList == null ) {
-			this.allowedValueList = new ArrayList<>();
-		}
-		return allowedValueList;
-	}
+     * @return the allowedValueList
+     */
+    public List<String> getAllowedValueList() {
+        if (this.allowedValueList == null) {
+            this.allowedValueList = new ArrayList<>();
+        }
+        return allowedValueList;
+    }
+
 }

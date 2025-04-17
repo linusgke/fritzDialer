@@ -70,7 +70,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.4</version>
+            <version>4.5.13</version>
         </dependency>
         <dependency>
             <groupId>javax.xml.bind</groupId>
@@ -88,8 +88,6 @@
             <artifactId>fboxlib</artifactId>
             <version>1.0.26</version>
         </dependency>
-
-
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>

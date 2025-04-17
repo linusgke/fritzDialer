@@ -21,35 +21,30 @@ import java.io.InputStream;
 
 public class JAXBUtilities {
 
-	public static JAXBContext getContext() throws ParseException {
-		try {
+    public static JAXBContext getContext() throws ParseException {
+        try {
+            return JAXBContext.newInstance(RootType.class, ScpdType.class, ActionType.class, AllowedValueRangeType.class, ArgumentType.class, DeviceDesc.class, ServiceDesc.class, IconType.class, SpecVersionType.class, StateVariableType.class);
+        } catch (JAXBException e) {
+            throw new ParseException(e);
+        }
+    }
 
-			return JAXBContext.newInstance(RootType.class, ScpdType.class, ActionType.class,
-					AllowedValueRangeType.class, ArgumentType.class, DeviceDesc.class, ServiceDesc.class,
-					IconType.class, SpecVersionType.class, StateVariableType.class
+    public static Object unmarshalInput(InputStream in) throws ParseException {
+        try {
+            JAXBContext context = getContext();
+            javax.xml.bind.Unmarshaller um = context.createUnmarshaller();
+            XMLReader reader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
+            NamespaceFilter inFilter = new NamespaceFilter(null, false);
+            inFilter.setParent(reader);
+            InputSource is = new InputSource(in);
+            SAXSource source = new SAXSource(inFilter, is);
+            return um.unmarshal(source);
+        } catch (SAXException | JAXBException | ParserConfigurationException e) {
+            throw new ParseException(e);
+        }
+    }
 
-			);
-		} catch (JAXBException e) {
-			throw new ParseException(e);
-		}
-	}
-
-	public static Object unmarshalInput(InputStream in) throws ParseException {
-		try {
-			JAXBContext context = getContext();
-			javax.xml.bind.Unmarshaller um = context.createUnmarshaller();
-			XMLReader reader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
-			NamespaceFilter inFilter = new NamespaceFilter(null, false);
-			inFilter.setParent(reader);
-			InputSource is = new InputSource(in);
-			SAXSource source = new SAXSource(inFilter, is);
-			return um.unmarshal(source);
-		} catch (SAXException | JAXBException | ParserConfigurationException e) {
-			throw new ParseException(e);
-		}
-	}
-
-	// utility class
-	private JAXBUtilities() {
-	}
+    // utility class
+    private JAXBUtilities() {
+    }
 }

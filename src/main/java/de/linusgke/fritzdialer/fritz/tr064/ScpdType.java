@@ -28,38 +28,32 @@ import javax.xml.bind.annotation.XmlType;
 @ToString
 @XmlRootElement(name = "scpd")
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "scpdType", propOrder = {
-		"specVersion",
-		"actionList",
-		"serviceStateTable"
-})
-public class ScpdType
-{
+@XmlType(name = "scpdType", propOrder = {"specVersion", "actionList", "serviceStateTable"})
+public class ScpdType {
 
     @XmlElement(required = true)
-	protected SpecVersionType specVersion;
+    protected SpecVersionType specVersion;
 
     @XmlElementWrapper(name = "actionList", required = true)
-	@XmlElement(name = "action")
-	private List<ActionType> actionList;
+    @XmlElement(name = "action")
+    private List<ActionType> actionList;
 
-    @XmlElementWrapper(name="serviceStateTable")
-    @XmlAnyElement (lax = true)
+    @XmlElementWrapper(name = "serviceStateTable")
+    @XmlAnyElement(lax = true)
     protected List<StateVariableType> serviceStateTable;
 
-	public List<StateVariableType> getServiceStateTable()
-	{
-    	if( this.serviceStateTable == null ) {
-    		this.serviceStateTable = new ArrayList<>();
-    	}
-		return serviceStateTable;
-	}
+    public List<StateVariableType> getServiceStateTable() {
+        if (this.serviceStateTable == null) {
+            this.serviceStateTable = new ArrayList<>();
+        }
+        return serviceStateTable;
+    }
 
-	public List<ActionType> getActionList()
-	{
-    	if( this.actionList == null ) {
-    		this.actionList = new ArrayList<>();
-    	}
-		return actionList;
-	}
+    public List<ActionType> getActionList() {
+        if (this.actionList == null) {
+            this.actionList = new ArrayList<>();
+        }
+        return actionList;
+    }
+
 }

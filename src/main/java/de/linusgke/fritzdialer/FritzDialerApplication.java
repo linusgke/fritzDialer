@@ -35,8 +35,8 @@ public class FritzDialerApplication {
     public void startup(final String[] args) {
         // Register native hotkey hook
         try {
-            //GlobalScreen.registerNativeHook();
-            //GlobalScreen.addNativeKeyListener(new HotkeyListener());
+            GlobalScreen.registerNativeHook();
+            GlobalScreen.addNativeKeyListener(new HotkeyListener(this));
         } catch (final Exception e) {
             log.error("Error while registering native hook", e);
             System.exit(1);

@@ -1,5 +1,6 @@
 package de.linusgke.fritzdialer.config;
 
+import de.linusgke.fritzdialer.fritz.FritzBox;
 import lombok.Data;
 
 @Data
@@ -9,7 +10,7 @@ public class DialerConfiguration {
 
     static {
         DEFAULT_CONFIGURATION = new DialerConfiguration();
-        DEFAULT_CONFIGURATION.setPhone("");
+        DEFAULT_CONFIGURATION.setPhone(FritzBox.NO_SELECTION_PHONE.getPort());
         DEFAULT_CONFIGURATION.setDialClipboardHotkey("Strg+B");
         DEFAULT_CONFIGURATION.setDialSelectionHotkey("Strg+Y");
         DEFAULT_CONFIGURATION.setAutostart(false);
@@ -24,7 +25,7 @@ public class DialerConfiguration {
     }
 
     private FritzBoxConfiguration fritzBox;
-    private String phone;
+    private int phone;
     private String dialClipboardHotkey;
     private String dialSelectionHotkey;
     private boolean autostart;

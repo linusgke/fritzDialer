@@ -2,13 +2,12 @@ package de.linusgke.fritzdialer.fritz;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.ToString;
 
 @AllArgsConstructor
 @Getter
 public class Phone {
 
-    private int dialPort;
+    private int port;
     private String name;
 
     @Override

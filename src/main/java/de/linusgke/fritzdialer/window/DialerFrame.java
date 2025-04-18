@@ -2,6 +2,7 @@ package de.linusgke.fritzdialer.window;
 
 import de.linusgke.fritzdialer.FritzDialerApplication;
 import de.linusgke.fritzdialer.config.DialerConfiguration;
+import de.linusgke.fritzdialer.fritz.FritzBox;
 import de.linusgke.fritzdialer.fritz.Phone;
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,24 +49,38 @@ public class DialerFrame extends JFrame {
         fillContentPane(contentPane);
 
         // Load data from configuration
-        loadFromConfiguration();
+        update();
 
         setContentPane(contentPane);
-        setVisible(true);
+        setVisible(!application.getConfiguration().isStartMinimized());
     }
 
-    public void updateStatus(final String status) {
-        SwingUtilities.invokeLater(() -> statusLabel.setText(status));
-    }
-
-    public void updatePhones(final List<Phone> phones) {
-        SwingUtilities.invokeLater(() -> phones.forEach(phone -> phoneInput.addItem(phone)));
-    }
-
-    private void loadFromConfiguration() {
+    public void update() {
         final DialerConfiguration configuration = application.getConfiguration();
 
-        phoneInput.setSelectedItem(configuration.getPhone());
+        if (application.getFritzBox().isReady()) {
+            statusLabel.setText("Bereit");
+            phoneInput.removeAllItems();
+            phoneInput.addItem(FritzBox.NO_SELECTION_PHONE);
+            for (final Phone phone : application.getFritzBox().getPhones()) {
+                phoneInput.addItem(phone);
+            }
+
+            final int selectedPhonePort = configuration.getPhone();
+            final Phone selectedPhone = application.getFritzBox().getPhoneByPort(selectedPhonePort);
+            if (selectedPhone == null) {
+                phoneInput.setSelectedIndex(0);
+            } else {
+                phoneInput.setSelectedItem(selectedPhone);
+            }
+
+            phoneInput.setEnabled(true);
+        } else {
+            statusLabel.setText("Nicht bereit");
+            phoneInput.removeAllItems();
+            phoneInput.setEnabled(false);
+        }
+
         callClipboardHotkeyInput.setText(configuration.getDialClipboardHotkey());
         callSelectionHotkeyInput.setText(configuration.getDialSelectionHotkey());
         autostartCheckBox.setSelected(configuration.isAutostart());
@@ -78,28 +93,51 @@ public class DialerFrame extends JFrame {
         passwordInput.setText(fritzBoxConfiguration.getPassword());
     }
 
-    private void saveToConfiguration() {
+    private void save() {
         final DialerConfiguration configuration = application.getConfiguration();
-        configuration.setPhone(phoneInput.getSelectedItem().toString());
+        configuration.setPhone(((Phone) phoneInput.getSelectedItem()).getPort());
         configuration.setDialClipboardHotkey(callClipboardHotkeyInput.getText());
         configuration.setDialSelectionHotkey(callSelectionHotkeyInput.getText());
         configuration.setAutostart(autostartCheckBox.isSelected());
         configuration.setStartMinimized(startMinimizedCheckBox.isSelected());
 
+        boolean fritzBoxConfigurationChanged = false;
         final DialerConfiguration.FritzBoxConfiguration fritzBoxConfiguration = configuration.getFritzBox();
-        fritzBoxConfiguration.setAddress(addressInput.getText());
-        fritzBoxConfiguration.setPort(Integer.parseInt(portInput.getText()));
-        fritzBoxConfiguration.setUsername(usernameInput.getText());
-        fritzBoxConfiguration.setPassword(String.valueOf(passwordInput.getPassword()));
+
+        final String address = addressInput.getText();
+        if (!address.equals(fritzBoxConfiguration.getAddress())) {
+            fritzBoxConfiguration.setAddress(address);
+            fritzBoxConfigurationChanged = true;
+        }
+
+        final int port = Integer.parseInt(portInput.getText());
+        if (port != fritzBoxConfiguration.getPort()) {
+            fritzBoxConfiguration.setPort(port);
+            fritzBoxConfigurationChanged = true;
+        }
+
+        final String username = usernameInput.getText();
+        if (!username.equals(fritzBoxConfiguration.getUsername())) {
+            fritzBoxConfiguration.setUsername(username);
+            fritzBoxConfigurationChanged = true;
+        }
+
+        final String password = String.valueOf(passwordInput.getPassword());
+        if (!password.equals(fritzBoxConfiguration.getPassword())) {
+            fritzBoxConfiguration.setPassword(password);
+            fritzBoxConfigurationChanged = true;
+        }
 
         try {
             application.saveConfiguration();
         } catch (final IOException ex) {
             JOptionPane.showMessageDialog(application.getFrame(), "Fehler beim Speichern der Konfiguration: " + ex, "Konfiguration speichern", JOptionPane.ERROR_MESSAGE);
+            return;
         }
 
-        // TODO check if credentials have changed
-        application.getFritzBox().connect();
+        if (fritzBoxConfigurationChanged) {
+            application.getFritzBox().connect();
+        }
     }
 
     private void addMenuBar() {
@@ -109,15 +147,22 @@ public class DialerFrame extends JFrame {
         final JMenu fileMenu = new JMenu("Datei");
         fileMenu.setMnemonic('D');
 
-        // About menu
-        final JMenu aboutMenu = new JMenu("?");
-        aboutMenu.setMnemonic('?');
+        final JMenuItem hideItem = new JMenuItem("Ausblenden");
+        hideItem.setMnemonic('A');
+        hideItem.addActionListener(e -> setVisible(false));
+        fileMenu.add(hideItem);
 
-        final JMenuItem infoItem = new JMenuItem("Info...");
-        infoItem.setMnemonic('I');
-        infoItem.addActionListener(e -> {
+        final JMenuItem quitItem = new JMenuItem("Beenden");
+        quitItem.setMnemonic('B');
+        quitItem.addActionListener(e -> System.exit(0));
+        fileMenu.add(quitItem);
+
+        // About menu
+        final JMenu aboutMenu = new JMenu("Info");
+        aboutMenu.setMnemonic('I');
+        aboutMenu.addActionListener(e -> {
+
         });
-        aboutMenu.add(infoItem);
 
         menuBar.add(fileMenu);
         menuBar.add(aboutMenu);
@@ -201,7 +246,7 @@ public class DialerFrame extends JFrame {
         final JButton saveButton = new JButton("Speichern");
         saveButton.setBounds(217, 238, 89, 23);
         saveButton.addActionListener(e -> {
-            SwingUtilities.invokeLater(this::saveToConfiguration);
+            SwingUtilities.invokeLater(this::save);
         });
         contentPane.add(saveButton);
 

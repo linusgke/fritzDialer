@@ -1,5 +1,6 @@
 package de.linusgke.fritzdialer.fritz;
 
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import de.linusgke.fritzdialer.FritzDialerApplication;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -10,20 +11,20 @@ import org.jfritz.fboxlib.fritzbox.FirmwareVersion;
 import org.jfritz.fboxlib.fritzbox.FritzBoxCommunication;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 @Slf4j
 @Getter
 public class FritzBox {
 
+    public static final Phone NO_SELECTION_PHONE = new Phone(-1, "Bei Anruf fragen");
+
     private final FritzDialerApplication application;
-    private final List<Phone> phones = new ArrayList<>();
+    private final Map<Integer, Phone> phoneMap = new HashMap<>();
 
     private FritzBoxCommunication communication;
     private Thread communicationThread;
-    private boolean connected;
+    private boolean ready;
 
     public FritzBox(final FritzDialerApplication application) {
         this.application = application;
@@ -34,11 +35,15 @@ public class FritzBox {
         communicationThread.start();
     }
 
-    public void call(final String phoneNumber) {
+    public void placeCall(String phoneNumber) {
+        phoneNumber = phoneNumber.replaceAll("\\+", "00");
+
+        log.info("Placing call to '{}'", phoneNumber);
+
         try {
             final List<NameValuePair> postData = new ArrayList<>();
             postData.add(new BasicNameValuePair("clicktodial", "on"));
-            postData.add(new BasicNameValuePair("port", "51")); // port.getDialPort()
+            postData.add(new BasicNameValuePair("port", Integer.toString(application.getConfiguration().getPhone())));
             postData.add(new BasicNameValuePair("btn_apply", ""));
             postData.add(new BasicNameValuePair("sid", communication.getSid()));
             postData.add(new BasicNameValuePair("page", "telDial"));
@@ -53,17 +58,26 @@ public class FritzBox {
         }
     }
 
+    public Phone getPhoneByPort(final int port) {
+        return phoneMap.get(port);
+    }
+
+    public Collection<Phone> getPhones() {
+        return phoneMap.values();
+    }
+
     private void initialize() {
+        ready = false;
+        application.getFrame().update();
+
         final String address = application.getConfiguration().getFritzBox().getAddress();
         final String username = application.getConfiguration().getFritzBox().getUsername();
         final String password = application.getConfiguration().getFritzBox().getPassword();
 
         log.info("Connecting to FRITZ!Box at {} ...", address);
-        application.getFrame().updateStatus("Verbinden mit " + address + " ...");
 
         if (address.isEmpty() || username.isEmpty() || password.isEmpty()) {
             log.warn("Credentials incomplete. Skipping login");
-            application.getFrame().updateStatus("Anmeldung fehlgeschlagen: Ungültige Zugangsdaten");
             return;
         }
 
@@ -75,7 +89,6 @@ public class FritzBox {
             communication.login();
         } catch (Exception e) {
             log.error("Error establishing HTTP connection with FRITZ!Box", e);
-            application.getFrame().updateStatus("Anmeldung fehlgeschlagen: HTTP Fehler");
             return;
         }
 
@@ -84,30 +97,13 @@ public class FritzBox {
             firmwareVersion = communication.getFirmwareVersion();
         } catch (IOException | FirmwareNotDetectedException | PageNotFoundException e) {
             log.warn("Error detecting firmware", e);
-            application.getFrame().updateStatus("Anmeldung fehlgeschlagen: Firmware konnte nicht festgestellt werden");
             return;
         }
 
-        connected = true;
         log.info("Connected to FRITZ!Box ({})", firmwareVersion);
-        application.getFrame().updateStatus("Verbunden mit " + address + ": " + firmwareVersion);
 
-        requestPhones();
-    }
-
-    private Vector<String> query(final String query) {
-        try {
-            return getCommunication().getQuery(new Vector<>(List.of(query)));
-        } catch (IOException | LoginBlockedException | InvalidCredentialsException | PageNotFoundException |
-                 InvalidSessionIdException e) {
-            log.error("Error querying FRITZ!Box with query '{}'", query, e);
-            return null;
-        }
-    }
-
-    private void requestPhones() {
         // Remove all existing phones
-        phones.clear();
+        phoneMap.clear();
 
         for (final PhoneType type : PhoneType.values()) {
             final Vector<String> countResponse = query(type.getCountQuery());
@@ -130,11 +126,24 @@ public class FritzBox {
                     continue;
                 }
 
-                phones.add(new Phone(firstDialPort + i, name));
+                final int port = firstDialPort + i;
+                phoneMap.put(port, new Phone(port, name));
             }
         }
 
-        log.info("Found {} phones", phones.size());
-        application.getFrame().updatePhones(phones);
+        ready = true;
+
+        log.info("Registered {} phones", phoneMap.size());
+        application.getFrame().update();
+    }
+
+    private Vector<String> query(final String query) {
+        try {
+            return getCommunication().getQuery(new Vector<>(List.of(query)));
+        } catch (IOException | LoginBlockedException | InvalidCredentialsException | PageNotFoundException |
+                 InvalidSessionIdException e) {
+            log.error("Error querying FRITZ!Box with query '{}'", query, e);
+            return null;
+        }
     }
 }

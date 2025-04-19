@@ -10,7 +10,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.io.IOException;
-import java.util.List;
 
 @Slf4j
 public class DialerFrame extends JFrame {
@@ -95,7 +94,12 @@ public class DialerFrame extends JFrame {
 
     private void save() {
         final DialerConfiguration configuration = application.getConfiguration();
-        configuration.setPhone(((Phone) phoneInput.getSelectedItem()).getPort());
+
+        Phone selectedPhone = (Phone) phoneInput.getSelectedItem();
+        if (selectedPhone == null)
+            selectedPhone = FritzBox.NO_SELECTION_PHONE;
+
+        configuration.setPhone(selectedPhone.getPort());
         configuration.setDialClipboardHotkey(callClipboardHotkeyInput.getText());
         configuration.setDialSelectionHotkey(callSelectionHotkeyInput.getText());
         configuration.setAutostart(autostartCheckBox.isSelected());

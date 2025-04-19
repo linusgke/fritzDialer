@@ -2,9 +2,6 @@ package de.linusgke.fritzdialer.hotkey;
 
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
-import com.google.i18n.phonenumbers.NumberParseException;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber;
 import de.linusgke.fritzdialer.FritzDialerApplication;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,7 +11,6 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.util.Locale;
 
 @Slf4j
 public class HotkeyListener implements NativeKeyListener {
@@ -33,13 +29,10 @@ public class HotkeyListener implements NativeKeyListener {
         final String fullKeyText = modifiersExText.isEmpty() ? keyText : modifiersExText + "+" + keyText;
 
         if (fullKeyText.equals(application.getConfiguration().getDialClipboardHotkey()) && System.currentTimeMillis() - lastClipboardTimestamp > 5000) {
-            try {
-                final String data = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
-                final String formattedNumber = parseNumber(data);
-                application.getFritzBox().placeCall(formattedNumber);
+            final String data = retrieveClipboardString();
+            if (data != null) {
+                application.getFritzBox().placeCall(data);
                 lastClipboardTimestamp = System.currentTimeMillis();
-            } catch (final UnsupportedFlavorException | IOException | NumberParseException e) {
-                throw new RuntimeException(e);
             }
         }
 
@@ -54,24 +47,24 @@ public class HotkeyListener implements NativeKeyListener {
                 robot.keyRelease(KeyEvent.VK_CONTROL);
                 Thread.sleep(100);
             } catch (final AWTException | InterruptedException e) {
-                throw new RuntimeException(e);
+                log.error("Error simulating copy shortcut", e);
             }
 
-            try {
-                final String data = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
-                final String formattedNumber = parseNumber(data);
-                application.getFritzBox().placeCall(formattedNumber);
-            } catch (final UnsupportedFlavorException | IOException | NumberParseException e) {
-                throw new RuntimeException(e);
-            }
-
+            final String data = retrieveClipboardString();
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(clipboardContents, null);
+
+            if (data != null) {
+                application.getFritzBox().placeCall(data);
+            }
         }
     }
 
-    private String parseNumber(final String number) throws NumberParseException {
-        final PhoneNumberUtil instance = PhoneNumberUtil.getInstance();
-        final Phonenumber.PhoneNumber phoneNumber = instance.parse(number, Locale.getDefault().getCountry());
-        return instance.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164);
+    private String retrieveClipboardString() {
+        try {
+            return (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+        } catch (final UnsupportedFlavorException | IOException e) {
+            log.error("Error retrieving clipboard contents", e);
+            return null;
+        }
     }
 }

@@ -1,7 +1,10 @@
 package de.linusgke.fritzdialer.fritz;
 
+import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
 import de.linusgke.fritzdialer.FritzDialerApplication;
+import de.linusgke.fritzdialer.window.PhoneSelectionDialog;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.NameValuePair;
@@ -35,23 +38,45 @@ public class FritzBox {
         communicationThread.start();
     }
 
-    public void placeCall(String phoneNumber) {
-        phoneNumber = phoneNumber.replaceAll("\\+", "00");
+    public void placeCall(final String rawPhoneNumber) {
+        final int phonePort = application.getConfiguration().getPhone();
+        placeCall(rawPhoneNumber, phonePort);
+    }
+
+    private void placeCall(final String rawPhoneNumber, final int phonePort) {
+        final String phoneNumber;
+        try {
+            phoneNumber = parseNumber(rawPhoneNumber).replaceAll("\\+", "00");
+        } catch (final NumberParseException e) {
+            log.warn("Invalid phone number '{}' given", rawPhoneNumber, e);
+            return;
+        }
+
+        if (!application.getFritzBox().isReady()) {
+            log.warn("Cancelled call to '{}': connection not ready", phoneNumber);
+            return;
+        }
 
         log.info("Placing call to '{}'", phoneNumber);
+
+        if (phonePort == NO_SELECTION_PHONE.getPort()) {
+            log.info("Opening phone selection dialog");
+            new PhoneSelectionDialog(application, selectedPhone -> placeCall(phoneNumber, selectedPhone.getPort()));
+            return;
+        }
 
         try {
             final List<NameValuePair> postData = new ArrayList<>();
             postData.add(new BasicNameValuePair("clicktodial", "on"));
-            postData.add(new BasicNameValuePair("port", Integer.toString(application.getConfiguration().getPhone())));
+            postData.add(new BasicNameValuePair("port", Integer.toString(phonePort)));
             postData.add(new BasicNameValuePair("btn_apply", ""));
             postData.add(new BasicNameValuePair("sid", communication.getSid()));
             postData.add(new BasicNameValuePair("page", "telDial"));
             communication.postToPageAndGetAsString("/data.lua", postData);
 
             String dial_query = "useajax=1&xhr=1&dial=" + phoneNumber;
-            dial_query = dial_query.replace("#", "%23"); // # %23
-            dial_query = dial_query.replace("*", "%2A"); // * %2A
+            dial_query = dial_query.replace("#", "%23");
+            dial_query = dial_query.replace("*", "%2A");
             communication.getPageAsString("/fon_num/foncalls_list.lua?" + dial_query);
         } catch (Exception e) {
             log.error("Error while connecting to FRITZ!Box", e);
@@ -145,5 +170,11 @@ public class FritzBox {
             log.error("Error querying FRITZ!Box with query '{}'", query, e);
             return null;
         }
+    }
+
+    private String parseNumber(final String number) throws NumberParseException {
+        final PhoneNumberUtil instance = PhoneNumberUtil.getInstance();
+        final Phonenumber.PhoneNumber phoneNumber = instance.parse(number, Locale.getDefault().getCountry());
+        return instance.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164);
     }
 }

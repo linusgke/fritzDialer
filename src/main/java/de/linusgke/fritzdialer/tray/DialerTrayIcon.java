@@ -22,7 +22,7 @@ public class DialerTrayIcon {
 
     private void initialize() {
         final SystemTray tray = SystemTray.getSystemTray();
-        final Image image = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icon.png"));
+        final Image image = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/icon.png"));
         final TrayIcon trayIcon = new TrayIcon(image, "FritzDialer");
 
         trayIcon.setImageAutoSize(true);

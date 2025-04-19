@@ -36,7 +36,7 @@ public class DialerFrame extends JFrame {
         setResizable(false);
         setLocationRelativeTo(null);
 
-        final Image image = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icon.png"));
+        final Image image = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/icon.png"));
         setIconImage(image);
 
         // Add top menu bar

@@ -100,6 +100,8 @@
                                         <argument>MIT</argument>
                                         <argument>--vendor</argument>
                                         <argument>Linus Groschke</argument>
+                                        <argument>--app-version</argument>
+                                        <argument>${project.version}</argument>
                                         <argument>--icon</argument>
                                         <argument>${project.basedir}/src/main/resources/icons/icon.ico</argument>
                                         <argument>--win-per-user-install</argument>

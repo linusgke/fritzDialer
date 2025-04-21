@@ -25,7 +25,7 @@ import java.nio.file.Path;
 @Slf4j
 public class FritzDialerApplication {
 
-    public static final String CURRENT_VERSION = "1.0";
+    public static final String CURRENT_VERSION = "1.1";
     public static final URI GITHUB_URI = URI.create("https://github.com/linusgke/fritzDialer");
 
     private static final Path CONFIGURATION_PATH = Path.of("config.json");

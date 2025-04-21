@@ -16,6 +16,7 @@ import javax.swing.*;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,24 +25,27 @@ import java.nio.file.Path;
 @Slf4j
 public class FritzDialerApplication {
 
+    public static final String CURRENT_VERSION = "0.1";
+    public static final URI GITHUB_URI = URI.create("https://github.com/linusgke/fritzDialer");
+
     private static final Path CONFIGURATION_PATH = Path.of(System.getenv("APPDATA") + "\\FritzDialer\\config.json");
 
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private DialerConfiguration configuration;
+    private HotkeyListener hotkeyListener;
     private FritzBox fritzBox;
     private DialerFrame frame;
     private DialerTrayIcon trayIcon;
 
     public void startup(final String[] args) {
-        // Register native hotkey hook
+        // Read configuration
         try {
-            GlobalScreen.registerNativeHook();
-            GlobalScreen.addNativeKeyListener(new HotkeyListener(this));
-        } catch (final Exception e) {
-            log.error("Error while registering native hook", e);
-            System.exit(1);
+            configuration = readConfiguration();
+        } catch (final IOException e) {
+            log.error("Error loading configuration", e);
         }
 
+        // Set look and feel
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (final Exception e) {
@@ -49,10 +53,15 @@ public class FritzDialerApplication {
             System.exit(1);
         }
 
+        // Register native hotkey hook
+        hotkeyListener = new HotkeyListener(this);
+
         try {
-            configuration = readConfiguration();
-        } catch (final IOException e) {
-            log.error("Error loading configuration", e);
+            GlobalScreen.registerNativeHook();
+            GlobalScreen.addNativeKeyListener(hotkeyListener);
+        } catch (final Exception e) {
+            log.error("Error while registering native hook", e);
+            System.exit(1);
         }
 
         // Create FRITZ!Box connection

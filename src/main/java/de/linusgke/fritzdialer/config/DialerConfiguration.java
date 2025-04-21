@@ -13,7 +13,6 @@ public class DialerConfiguration {
         DEFAULT_CONFIGURATION.setPhone(FritzBox.NO_SELECTION_PHONE.getPort());
         DEFAULT_CONFIGURATION.setDialClipboardHotkey("Strg+B");
         DEFAULT_CONFIGURATION.setDialSelectionHotkey("Strg+Y");
-        DEFAULT_CONFIGURATION.setAutostart(false);
         DEFAULT_CONFIGURATION.setStartMinimized(false);
 
         final FritzBoxConfiguration fritzBoxConfiguration = new FritzBoxConfiguration();
@@ -28,7 +27,6 @@ public class DialerConfiguration {
     private int phone;
     private String dialClipboardHotkey;
     private String dialSelectionHotkey;
-    private boolean autostart;
     private boolean startMinimized;
 
     @Data

@@ -8,8 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 @Slf4j
 public class DialerFrame extends JFrame {
@@ -23,7 +29,6 @@ public class DialerFrame extends JFrame {
     private JComboBox<Phone> phoneInput;
     private JTextField callClipboardHotkeyInput;
     private JTextField callSelectionHotkeyInput;
-    private JCheckBox autostartCheckBox;
     private JCheckBox startMinimizedCheckBox;
     private JLabel statusLabel;
 
@@ -80,9 +85,10 @@ public class DialerFrame extends JFrame {
             phoneInput.setEnabled(false);
         }
 
-        callClipboardHotkeyInput.setText(configuration.getDialClipboardHotkey());
-        callSelectionHotkeyInput.setText(configuration.getDialSelectionHotkey());
-        autostartCheckBox.setSelected(configuration.isAutostart());
+        if (!application.getHotkeyListener().isLearningHotkey()) {
+            callClipboardHotkeyInput.setText(configuration.getDialClipboardHotkey());
+            callSelectionHotkeyInput.setText(configuration.getDialSelectionHotkey());
+        }
         startMinimizedCheckBox.setSelected(configuration.isStartMinimized());
 
         final DialerConfiguration.FritzBoxConfiguration fritzBoxConfiguration = configuration.getFritzBox();
@@ -102,7 +108,6 @@ public class DialerFrame extends JFrame {
         configuration.setPhone(selectedPhone.getPort());
         configuration.setDialClipboardHotkey(callClipboardHotkeyInput.getText());
         configuration.setDialSelectionHotkey(callSelectionHotkeyInput.getText());
-        configuration.setAutostart(autostartCheckBox.isSelected());
         configuration.setStartMinimized(startMinimizedCheckBox.isSelected());
 
         boolean fritzBoxConfigurationChanged = false;
@@ -164,8 +169,31 @@ public class DialerFrame extends JFrame {
         // About menu
         final JMenu aboutMenu = new JMenu("Info");
         aboutMenu.setMnemonic('I');
-        aboutMenu.addActionListener(e -> {
+        aboutMenu.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                new InfoDialog(application);
+            }
 
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
         });
 
         menuBar.add(fileMenu);
@@ -233,19 +261,37 @@ public class DialerFrame extends JFrame {
 
         callClipboardHotkeyInput = new JTextField();
         callClipboardHotkeyInput.setBounds(163, 156, 143, 20);
+        callClipboardHotkeyInput.setFocusable(false);
+        addHotkeyLearnListener(callClipboardHotkeyInput, hotkey -> {
+            // Prevent selection and clipboard hotkey from being the same
+            if (hotkey.equals(application.getConfiguration().getDialSelectionHotkey())) {
+                JOptionPane.showMessageDialog(application.getFrame(), "Tastenkombination muss sich von 'Markierung wählen' unterscheiden!", "Tastenkombination festlegen", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+
+            application.getConfiguration().setDialClipboardHotkey(hotkey);
+            return true;
+        });
         contentPane.add(callClipboardHotkeyInput);
 
         callSelectionHotkeyInput = new JTextField();
         callSelectionHotkeyInput.setBounds(163, 184, 143, 20);
+        callSelectionHotkeyInput.setFocusable(false);
+        addHotkeyLearnListener(callSelectionHotkeyInput, hotkey -> {
+            // Prevent selection and clipboard hotkey from being the same
+            if (hotkey.equals(application.getConfiguration().getDialClipboardHotkey())) {
+                JOptionPane.showMessageDialog(application.getFrame(), "Tastenkombination muss sich von 'Zwischenablage wählen' unterscheiden!", "Tastenkombination festlegen", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+
+            application.getConfiguration().setDialSelectionHotkey(hotkey);
+            return true;
+        });
         contentPane.add(callSelectionHotkeyInput);
 
         startMinimizedCheckBox = new JCheckBox("Minimiert starten");
-        startMinimizedCheckBox.setBounds(193, 208, 113, 23);
+        startMinimizedCheckBox.setBounds(40, 208, 128, 23);
         contentPane.add(startMinimizedCheckBox);
-
-        autostartCheckBox = new JCheckBox("Mit Windows starten");
-        autostartCheckBox.setBounds(40, 208, 128, 23);
-        contentPane.add(autostartCheckBox);
 
         final JButton saveButton = new JButton("Speichern");
         saveButton.setBounds(217, 238, 89, 23);
@@ -257,5 +303,50 @@ public class DialerFrame extends JFrame {
         statusLabel = new JLabel("...");
         statusLabel.setBounds(10, 285, 300, 14);
         contentPane.add(statusLabel);
+    }
+
+    private void addHotkeyLearnListener(final JTextField textField, final Predicate<String> hotkeyCallback) {
+        textField.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                textField.setEnabled(false);
+                textField.setText("...");
+
+                application.getHotkeyListener().setLearnHotkeyCallback(hotkey -> {
+                    if (!hotkey.contains("+")) {
+                        JOptionPane.showMessageDialog(application.getFrame(), "Eine Funktionstaste (Strg, Alt, etc.) ist für die Tastenkombination erforderlich!", "Tastenkombination festlegen", JOptionPane.ERROR_MESSAGE);
+                        return false;
+                    }
+
+                    if (!hotkeyCallback.test(hotkey)) {
+                        return false;
+                    }
+
+                    textField.setText(hotkey);
+                    textField.setEnabled(true);
+                    return true;
+                });
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+        });
     }
 }

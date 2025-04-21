@@ -3,6 +3,7 @@ package de.linusgke.fritzdialer.hotkey;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import de.linusgke.fritzdialer.FritzDialerApplication;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.awt.*;
@@ -11,11 +12,15 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.function.Predicate;
 
 @Slf4j
 public class HotkeyListener implements NativeKeyListener {
 
     private final FritzDialerApplication application;
+
+    @Setter
+    private Predicate<String> learnHotkeyCallback;
     private long lastClipboardTimestamp;
 
     public HotkeyListener(final FritzDialerApplication application) {
@@ -27,6 +32,13 @@ public class HotkeyListener implements NativeKeyListener {
         final String keyText = NativeKeyEvent.getKeyText(nativeEvent.getKeyCode());
         final String modifiersExText = NativeKeyEvent.getModifiersText(nativeEvent.getModifiers());
         final String fullKeyText = modifiersExText.isEmpty() ? keyText : modifiersExText + "+" + keyText;
+
+        if (learnHotkeyCallback != null && !keyText.isEmpty() && !keyText.equals(modifiersExText)) {
+            if (learnHotkeyCallback.test(fullKeyText)) {
+                learnHotkeyCallback = null;
+            }
+            return;
+        }
 
         if (fullKeyText.equals(application.getConfiguration().getDialClipboardHotkey()) && System.currentTimeMillis() - lastClipboardTimestamp > 5000) {
             final String data = retrieveClipboardString();
@@ -57,6 +69,10 @@ public class HotkeyListener implements NativeKeyListener {
                 application.getFritzBox().placeCall(data);
             }
         }
+    }
+
+    public boolean isLearningHotkey() {
+        return learnHotkeyCallback != null;
     }
 
     private String retrieveClipboardString() {

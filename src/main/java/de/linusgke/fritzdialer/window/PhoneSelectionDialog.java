@@ -29,18 +29,23 @@ public class PhoneSelectionDialog extends JDialog {
             phoneInput.addItem(phone);
         }
 
-        final JButton confirmButton = new JButton("Anrufen");
-        confirmButton.addActionListener(e -> {
+        contentPane.add(phoneInput, BorderLayout.NORTH);
+
+        final JPanel buttonPane = new JPanel();
+        buttonPane.setLayout(new BorderLayout());
+
+        final JButton callButton = new JButton("Anrufen");
+        callButton.addActionListener(e -> {
             dispose();
             callback.accept((Phone) phoneInput.getSelectedItem());
         });
+        buttonPane.add(callButton, BorderLayout.WEST);
 
         final JButton cancelButton = new JButton("Abbrechen");
+        buttonPane.add(cancelButton, BorderLayout.CENTER);
         cancelButton.addActionListener(e -> dispose());
 
-        contentPane.add(phoneInput, BorderLayout.NORTH);
-        contentPane.add(confirmButton, BorderLayout.WEST);
-        contentPane.add(cancelButton, BorderLayout.EAST);
+        contentPane.add(buttonPane, BorderLayout.SOUTH);
         setVisible(true);
     }
 }

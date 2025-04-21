@@ -16,7 +16,7 @@
         <main.class>de.linusgke.fritzdialer.Bootstrap</main.class>
         <fatJar.dir>${project.build.directory}/fatJar/</fatJar.dir>
         <destination.dir>${project.build.directory}/${project.name}</destination.dir>
-        <destination.name>${project.name}</destination.name>
+        <destination.name>${project.build.finalName}</destination.name>
     </properties>
 
     <build>
@@ -87,7 +87,7 @@
                                         <argument>--input</argument>
                                         <argument>${fatJar.dir}</argument>
                                         <argument>--name</argument>
-                                        <argument>${project.name}</argument>
+                                        <argument>${project.build.finalName}</argument>
                                         <argument>--main-class</argument>
                                         <argument>${main.class}</argument>
                                         <argument>--main-jar</argument>
@@ -101,8 +101,10 @@
                                         <argument>--vendor</argument>
                                         <argument>Linus Groschke</argument>
                                         <argument>--icon</argument>
-                                        <argument>${project.basedir}/src/main/resources/icons/${icon}</argument>
-                                        <argument>${extra}</argument>
+                                        <argument>${project.basedir}/src/main/resources/icons/icon.ico</argument>
+                                        <argument>--win-dir-chooser</argument>
+                                        <argument>--win-menu</argument>
+                                        <argument>--win-shortcut-prompt</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -138,31 +140,6 @@
                 <icon>icon.ico</icon>
                 <type>exe</type>
                 <extra>--win-menu</extra>
-            </properties>
-        </profile>
-        <profile>
-            <id>linux</id>
-            <activation>
-                <os>
-                    <family>unix</family>
-                </os>
-            </activation>
-            <properties>
-                <icon>icon.png</icon>
-                <type>deb</type>
-            </properties>
-        </profile>
-        <profile>
-            <id>mac</id>
-            <activation>
-                <os>
-                    <family>mac</family>
-                </os>
-            </activation>
-            <properties>
-                <icon>icon.icns</icon>
-                <destination.name>${project.name}.app</destination.name>
-                <type>dmg</type>
             </properties>
         </profile>
     </profiles>

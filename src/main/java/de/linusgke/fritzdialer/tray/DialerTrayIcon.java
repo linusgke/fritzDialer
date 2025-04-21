@@ -55,7 +55,7 @@ public class DialerTrayIcon {
             }
         });
 
-        final PopupMenu menu = new PopupMenu("N/A");
+        final PopupMenu menu = new PopupMenu();
         menu.add(createItem("Beenden", e -> System.exit(0)));
         trayIcon.setPopupMenu(menu);
 

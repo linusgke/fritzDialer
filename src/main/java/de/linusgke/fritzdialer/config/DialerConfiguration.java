@@ -2,7 +2,11 @@ package de.linusgke.fritzdialer.config;
 
 import de.linusgke.fritzdialer.fritz.FritzBox;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
+import java.util.Base64;
+
+@Slf4j
 @Data
 public class DialerConfiguration {
 
@@ -35,5 +39,18 @@ public class DialerConfiguration {
         private int port;
         private String username;
         private String password;
+
+        public String getPassword() {
+            try {
+                return new String(Base64.getDecoder().decode(password));
+            } catch (final IllegalArgumentException e) {
+                log.error("Invalid password value", e);
+                return "";
+            }
+        }
+
+        public void setPassword(final String password) {
+            this.password = Base64.getEncoder().encodeToString(password.getBytes());
+        }
     }
 }

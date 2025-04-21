@@ -57,7 +57,7 @@ public class HotkeyListener implements NativeKeyListener {
                 robot.keyPress(KeyEvent.VK_C);
                 robot.keyRelease(KeyEvent.VK_C);
                 robot.keyRelease(KeyEvent.VK_CONTROL);
-                Thread.sleep(100);
+                Thread.sleep(500);
             } catch (final AWTException | InterruptedException e) {
                 log.error("Error simulating copy shortcut", e);
             }

@@ -25,10 +25,10 @@ import java.nio.file.Path;
 @Slf4j
 public class FritzDialerApplication {
 
-    public static final String CURRENT_VERSION = "0.1";
+    public static final String CURRENT_VERSION = "1.0";
     public static final URI GITHUB_URI = URI.create("https://github.com/linusgke/fritzDialer");
 
-    private static final Path CONFIGURATION_PATH = Path.of(System.getenv("APPDATA") + "\\FritzDialer\\config.json");
+    private static final Path CONFIGURATION_PATH = Path.of("config.json");
 
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private DialerConfiguration configuration;
@@ -100,7 +100,6 @@ public class FritzDialerApplication {
 
     public void saveConfiguration() throws IOException {
         if (!Files.exists(CONFIGURATION_PATH)) {
-            Files.createDirectories(CONFIGURATION_PATH.getParent());
             Files.createFile(CONFIGURATION_PATH);
         }
 

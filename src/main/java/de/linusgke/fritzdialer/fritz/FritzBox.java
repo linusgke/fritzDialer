@@ -14,6 +14,7 @@ import org.jfritz.fboxlib.fritzbox.FirmwareVersion;
 import org.jfritz.fboxlib.fritzbox.FritzBoxCommunication;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.util.*;
 
 @Slf4j
@@ -27,7 +28,7 @@ public class FritzBox {
 
     private FritzBoxCommunication communication;
     private Thread communicationThread;
-    private boolean ready;
+    private DialerStatus status = DialerStatus.NOT_READY;
 
     public FritzBox(final FritzDialerApplication application) {
         this.application = application;
@@ -36,6 +37,13 @@ public class FritzBox {
     public void connect() {
         communicationThread = new Thread(this::initialize);
         communicationThread.start();
+    }
+
+    public void disconnect() {
+        status = DialerStatus.NOT_READY;
+        log.info("Disconnected from FRITZ!Box");
+
+        application.getFrame().update();
     }
 
     public void placeCall(final String rawPhoneNumber) {
@@ -52,7 +60,7 @@ public class FritzBox {
             return;
         }
 
-        if (!application.getFritzBox().isReady()) {
+        if (status != DialerStatus.READY) {
             log.warn("Cancelled call to '{}': connection not ready", phoneNumber);
             return;
         }
@@ -61,7 +69,7 @@ public class FritzBox {
 
         if (phonePort == NO_SELECTION_PHONE.getPort()) {
             log.info("Opening phone selection dialog");
-            new PhoneSelectionDialog(application, selectedPhone -> placeCall(phoneNumber, selectedPhone.getPort()));
+            new PhoneSelectionDialog(application, phoneNumber, selectedPhone -> placeCall(phoneNumber, selectedPhone.getPort()));
             return;
         }
 
@@ -92,19 +100,25 @@ public class FritzBox {
     }
 
     private void initialize() {
-        ready = false;
         application.getFrame().update();
+
+        System.out.println(FileSystems.getDefault()
+                .getPath("")
+                .toAbsolutePath());
 
         final String address = application.getConfiguration().getFritzBox().getAddress();
         final String username = application.getConfiguration().getFritzBox().getUsername();
         final String password = application.getConfiguration().getFritzBox().getPassword();
 
-        log.info("Connecting to FRITZ!Box at {} ...", address);
-
         if (address.isEmpty() || username.isEmpty() || password.isEmpty()) {
             log.warn("Credentials incomplete. Skipping login");
             return;
         }
+
+        status = DialerStatus.CONNECTING;
+        log.info("Connecting to FRITZ!Box at {} ...", address);
+
+        application.getFrame().update();
 
         try {
             communication = new FritzBoxCommunication("http", application.getConfiguration().getFritzBox().getAddress(), Integer.toString(application.getConfiguration().getFritzBox().getPort()));
@@ -113,6 +127,9 @@ public class FritzBox {
             communication.setPassword(application.getConfiguration().getFritzBox().getPassword());
             communication.login();
         } catch (Exception e) {
+            status = DialerStatus.ERROR;
+            application.getFrame().update();
+
             log.error("Error establishing HTTP connection with FRITZ!Box", e);
             return;
         }
@@ -121,6 +138,9 @@ public class FritzBox {
         try {
             firmwareVersion = communication.getFirmwareVersion();
         } catch (IOException | FirmwareNotDetectedException | PageNotFoundException e) {
+            status = DialerStatus.ERROR;
+            application.getFrame().update();
+
             log.warn("Error detecting firmware", e);
             return;
         }
@@ -156,7 +176,7 @@ public class FritzBox {
             }
         }
 
-        ready = true;
+        status = DialerStatus.READY;
 
         log.info("Registered {} phones", phoneMap.size());
         application.getFrame().update();

@@ -10,11 +10,10 @@ import java.util.function.Consumer;
 
 public class PhoneSelectionDialog extends JDialog {
 
-    public PhoneSelectionDialog(final FritzDialerApplication application, final Consumer<Phone> callback) {
+    public PhoneSelectionDialog(final FritzDialerApplication application, final String phoneNumber, final Consumer<Phone> callback) {
         super(application.getFrame(), true);
 
         setTitle("Telefon wählen...");
-        setSize(200, 100);
         setResizable(false);
         setLocationRelativeTo(null);
 
@@ -24,12 +23,16 @@ public class PhoneSelectionDialog extends JDialog {
 
         setContentPane(contentPane);
 
+        final JLabel infoLabel = new JLabel("Über welches Telefon möchten Sie die Rufnummer " + phoneNumber + " anrufen?");
+
+        contentPane.add(infoLabel, BorderLayout.NORTH);
+
         final JComboBox<Phone> phoneInput = new JComboBox<>();
-        for (final Phone phone : application.getFritzBox().getApplication().getFritzBox().getPhones()) {
+        for (final Phone phone : application.getFritzBox().getPhones()) {
             phoneInput.addItem(phone);
         }
 
-        contentPane.add(phoneInput, BorderLayout.NORTH);
+        contentPane.add(phoneInput, BorderLayout.CENTER);
 
         final JPanel buttonPane = new JPanel();
         buttonPane.setLayout(new BorderLayout());
@@ -46,6 +49,7 @@ public class PhoneSelectionDialog extends JDialog {
         cancelButton.addActionListener(e -> dispose());
 
         contentPane.add(buttonPane, BorderLayout.SOUTH);
+        pack();
         setVisible(true);
     }
 }

@@ -46,14 +46,14 @@ public class InfoDialog extends JDialog {
         titleLabel.setFont(new Font("Tahoma", Font.BOLD, 30));
         contentPane.add(titleLabel);
 
-        final JLabel versionLabel = new JLabel("Version " + FritzDialerApplication.CURRENT_VERSION);
-        versionLabel.setBounds(178, 47, 197, 14);
-        contentPane.add(versionLabel);
+        final JLabel versionAuthorLabel = new JLabel("Version " + FritzDialerApplication.CURRENT_VERSION);
+        versionAuthorLabel.setBounds(178, 47, 197, 14);
+        contentPane.add(versionAuthorLabel);
 
         final JPanel licenseDisclaimerPanel = new JPanel();
         licenseDisclaimerPanel.setBounds(168, 72, 306, 178);
 
-        final TitledBorder titledBorder = new TitledBorder("License and disclaimer");
+        final TitledBorder titledBorder = new TitledBorder("GPL-3.0 license");
         titledBorder.setTitleJustification(TitledBorder.CENTER);
         licenseDisclaimerPanel.setBorder(titledBorder);
         licenseDisclaimerPanel.setLayout(null);
@@ -66,7 +66,7 @@ public class InfoDialog extends JDialog {
         licenseDisclaimerText.setWrapStyleWord(true);
         licenseDisclaimerText.setBackground(SystemColor.menu);
         licenseDisclaimerText.setFont(new Font("Tahoma", Font.PLAIN, 11));
-        licenseDisclaimerText.setText("This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or at your option any later version.\r\n\r\nThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. \r\n\r\nYou should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.\r\n\r\nDisclaimer: This program is not affiliated, associated, authorized, endorsed by, or in any way officially connected with AVM.");
+        licenseDisclaimerText.setText("This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or at your option any later version.\r\n\r\nThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. \r\n\r\nYou should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.\r\n\r\nDisclaimer: This program is not affiliated, associated, authorized, endorsed by, or in any way officially connected with FRITZ! GmbH.");
         licenseDisclaimerText.setCaretPosition(0);
         licenseDisclaimerText.setFocusable(false);
 
@@ -82,8 +82,8 @@ public class InfoDialog extends JDialog {
         addGitHubClickHandler(githubLogoLabel);
         contentPane.add(githubLogoLabel);
 
-        final JLabel githubTextLabel = new JLabel("Open on GitHub");
-        githubTextLabel.setBounds(43, 223, 87, 14);
+        final JLabel githubTextLabel = new JLabel("Quellcode auf GitHub");
+        githubTextLabel.setBounds(25, 223, 120, 14);
         githubTextLabel.setFont(new Font("Tahoma", Font.BOLD, 11));
         addGitHubClickHandler(githubTextLabel);
         contentPane.add(githubTextLabel);

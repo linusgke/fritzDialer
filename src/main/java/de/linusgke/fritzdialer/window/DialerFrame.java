@@ -2,19 +2,19 @@ package de.linusgke.fritzdialer.window;
 
 import de.linusgke.fritzdialer.FritzDialerApplication;
 import de.linusgke.fritzdialer.config.DialerConfiguration;
+import de.linusgke.fritzdialer.fritz.DialerStatus;
 import de.linusgke.fritzdialer.fritz.FritzBox;
 import de.linusgke.fritzdialer.fritz.Phone;
+import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 @Slf4j
@@ -31,6 +31,8 @@ public class DialerFrame extends JFrame {
     private JTextField callSelectionHotkeyInput;
     private JCheckBox startMinimizedCheckBox;
     private JLabel statusLabel;
+
+    private JMenuItem connectionItem;
 
     public DialerFrame(final FritzDialerApplication application) {
         this.application = application;
@@ -62,8 +64,10 @@ public class DialerFrame extends JFrame {
     public void update() {
         final DialerConfiguration configuration = application.getConfiguration();
 
-        if (application.getFritzBox().isReady()) {
+        if (application.getFritzBox().getStatus() == DialerStatus.READY) {
+            connectionItem.setEnabled(true);
             statusLabel.setText("Bereit");
+
             phoneInput.removeAllItems();
             phoneInput.addItem(FritzBox.NO_SELECTION_PHONE);
             for (final Phone phone : application.getFritzBox().getPhones()) {
@@ -79,10 +83,39 @@ public class DialerFrame extends JFrame {
             }
 
             phoneInput.setEnabled(true);
+        } else if (application.getFritzBox().getStatus() == DialerStatus.CONNECTING) {
+            connectionItem.setEnabled(false);
+            connectionItem.setText("Trennen");
+            connectionItem.setMnemonic('T');
+            for (ActionListener actionListener : connectionItem.getActionListeners()) {
+                connectionItem.removeActionListener(actionListener);
+            }
+            connectionItem.addActionListener(e -> application.getFritzBox().disconnect());
+
+            addressInput.setEditable(false);
+            portInput.setEditable(false);
+            usernameInput.setEditable(false);
+            passwordInput.setEditable(false);
+
+            statusLabel.setText("Verbindung wird hergestellt...");
         } else {
-            statusLabel.setText("Nicht bereit");
+            connectionItem.setEnabled(true);
+            connectionItem.setText("Verbinden");
+            connectionItem.setMnemonic('V');
+            for (ActionListener actionListener : connectionItem.getActionListeners()) {
+                connectionItem.removeActionListener(actionListener);
+            }
+            connectionItem.addActionListener(e -> application.getFritzBox().connect());
+
+            addressInput.setEditable(true);
+            portInput.setEditable(true);
+            usernameInput.setEditable(true);
+            passwordInput.setEditable(true);
+
             phoneInput.removeAllItems();
             phoneInput.setEnabled(false);
+
+            statusLabel.setText(application.getFritzBox().getStatus() == DialerStatus.ERROR ? "Ein Fehler ist aufgetreten! Näheres siehe Datei > Protokoll" : "Nicht bereit");
         }
 
         if (!application.getHotkeyListener().isLearningHotkey()) {
@@ -110,42 +143,17 @@ public class DialerFrame extends JFrame {
         configuration.setDialSelectionHotkey(callSelectionHotkeyInput.getText());
         configuration.setStartMinimized(startMinimizedCheckBox.isSelected());
 
-        boolean fritzBoxConfigurationChanged = false;
         final DialerConfiguration.FritzBoxConfiguration fritzBoxConfiguration = configuration.getFritzBox();
 
-        final String address = addressInput.getText();
-        if (!address.equals(fritzBoxConfiguration.getAddress())) {
-            fritzBoxConfiguration.setAddress(address);
-            fritzBoxConfigurationChanged = true;
-        }
-
-        final int port = Integer.parseInt(portInput.getText());
-        if (port != fritzBoxConfiguration.getPort()) {
-            fritzBoxConfiguration.setPort(port);
-            fritzBoxConfigurationChanged = true;
-        }
-
-        final String username = usernameInput.getText();
-        if (!username.equals(fritzBoxConfiguration.getUsername())) {
-            fritzBoxConfiguration.setUsername(username);
-            fritzBoxConfigurationChanged = true;
-        }
-
-        final String password = String.valueOf(passwordInput.getPassword());
-        if (!password.equals(fritzBoxConfiguration.getPassword())) {
-            fritzBoxConfiguration.setPassword(password);
-            fritzBoxConfigurationChanged = true;
-        }
+        fritzBoxConfiguration.setAddress(addressInput.getText());
+        fritzBoxConfiguration.setPort(Integer.parseInt(portInput.getText()));
+        fritzBoxConfiguration.setUsername(usernameInput.getText());
+        fritzBoxConfiguration.setPassword(String.valueOf(passwordInput.getPassword()));
 
         try {
             application.saveConfiguration();
         } catch (final IOException ex) {
             JOptionPane.showMessageDialog(application.getFrame(), "Fehler beim Speichern der Konfiguration: " + ex, "Konfiguration speichern", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        if (fritzBoxConfigurationChanged) {
-            application.getFritzBox().connect();
         }
     }
 
@@ -160,6 +168,16 @@ public class DialerFrame extends JFrame {
         hideItem.setMnemonic('A');
         hideItem.addActionListener(e -> setVisible(false));
         fileMenu.add(hideItem);
+
+        fileMenu.addSeparator();
+
+        final JMenuItem logItem = new JMenuItem("Protokoll");
+        logItem.setMnemonic('P');
+        logItem.addActionListener(e -> new LogDialog(application));
+        fileMenu.add(logItem);
+
+        connectionItem = new JMenuItem();
+        fileMenu.add(connectionItem);
 
         final JMenuItem quitItem = new JMenuItem("Beenden");
         quitItem.setMnemonic('B');

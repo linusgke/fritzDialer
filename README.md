@@ -17,7 +17,7 @@ Dial any phone number on a telephone connected to your FRITZ!Box.
 <img width="558" height="392" alt="grafik" src="https://github.com/user-attachments/assets/f9fdbd1a-a8d0-4d0d-9ee9-4fc1c9805aae" />
 
 5. Your phone should _ring_ now! Upon answering, dialing starts.<br>
-   _(Depending on your type phone, it might only start ringing whenever the called party picks up the call. See ['Known restrictions'](https://github.com/linusgke/FRITZDialer?tab=readme-ov-file#known-restrictions))_
+   _(Depending on the type of your phone, it might only start ringing whenever the called party picks up the call. See ['Known restrictions'](https://github.com/linusgke/FRITZDialer?tab=readme-ov-file#known-restrictions))_
 
 # Known restrictions
 
